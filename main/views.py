@@ -20,8 +20,18 @@ try:
     if len(Week.objects.all()) == 0:
         createWeekDays()
 
-    if len(Place.objects.all()) == 0:
+    if len(Flight.objects.all()) == 0:
         addPlaces()
+        try:
+            a1 = Flight.objects.create(origin=Place.objects.get(code='DEL'), destination=Place.objects.get(code='LHR'), depart_time="04:05:00" , duration="09:35:00", arrival_time="08:10:00", plane="Boeing 787", airline="Virgin Atlantic", economy_fare=48718.0, business_fare=132626.0, first_fare=207945.0)
+            a2 = Flight.objects.create(origin=Place.objects.get(code='LHR'), destination=Place.objects.get(code='DEL'), depart_time="10:55:00" , duration="08:30:00", arrival_time="23:55:00", plane="Boeing 787", airline="Virgin Atlantic", economy_fare=51784.0, business_fare=84544.0, first_fare=164061.0)
+            for day in Week.objects.all():
+                a1.depart_day.add(day)
+                a2.depart_day.add(day)
+            a1.save()
+            a2.save()
+        except Exception as e:
+            print(e)
 except:
     pass
 

@@ -71,7 +71,8 @@ function flight_to(event, focus=false) {
                 div.classList.add('places__list');
                 div.setAttribute('onclick', "selectplace(this)");
                 div.setAttribute('data-value', element.code);
-                div.innerText = `${element.city} (${element.country})`;
+                // div.innerText = `${element.city} (${element.country})`;
+                div.innerHTML = `<span class="airport_name">${element.city}, ${element.country}</span>&nbsp;&nbsp;<span class="iata gray">${element.code.toUpperCase()}</span>`;
                 list.append(div);
             });
         });
@@ -96,7 +97,8 @@ function flight_from(event, focus=false) {
                 div.classList.add('places__list');
                 div.setAttribute('onclick', "selectplace(this)");
                 div.setAttribute('data-value', element.code);
-                div.innerText = `${element.city} (${element.country})`;
+                // div.innerText = `${element.city} (${element.country})`;
+                div.innerHTML = `<span class="airport_name">${element.city}, ${element.country}</span>&nbsp;&nbsp;<span class="iata gray">${element.code.toUpperCase()}</span>`;
                 list.append(div);
             });
         });
