@@ -7,8 +7,9 @@ import secrets
 from datetime import datetime, timedelta
 from xhtml2pdf import pisa
 
-from main.constants import FEE
+from main.constants import FEE, COUPONS
 from .models import Week, Place
+import time
 
 import Flight_DBMS
 
@@ -23,36 +24,42 @@ def render_to_pdf(template_src, context_dict={}):
 
 
 def createticket(user,passengers,passengerscount,flight1,flight_1date,flight_1class,coupon,countrycode,email,mobile):
-    ticket = Ticket.objects.create()
-    ticket.user = user
-    ticket.ref_no = secrets.token_hex(3).upper()
-    for passenger in passengers:
-        ticket.passengers.add(passenger)
-    ticket.flight = flight1
-    ticket.flight_ddate = datetime(int(flight_1date.split('-')[2]),int(flight_1date.split('-')[1]),int(flight_1date.split('-')[0]))
-    flight1ddate = datetime(int(flight_1date.split('-')[2]),int(flight_1date.split('-')[1]),int(flight_1date.split('-')[0]),flight1.depart_time.hour,flight1.depart_time.minute)
-    flight1adate = (flight1ddate + flight1.duration)
-    ticket.flight_adate = datetime(flight1adate.year,flight1adate.month,flight1adate.day)
-    ffre = 0.0
-    if flight_1class.lower() == 'first':
-        ticket.flight_fare = flight1.first_fare*int(passengerscount)
-        ffre = flight1.first_fare*int(passengerscount)
-    elif flight_1class.lower() == 'business':
-        ticket.flight_fare = flight1.business_fare*int(passengerscount)
-        ffre = flight1.business_fare*int(passengerscount)
-    else:
-        ticket.flight_fare = flight1.economy_fare*int(passengerscount)
-        ffre = flight1.economy_fare*int(passengerscount)
-    ticket.other_charges = FEE
-    if coupon:
-        ticket.coupon_used = coupon                     ##########Coupon
-    ticket.total_fare = ffre+FEE+0.0                    ##########Total(Including coupon)
-    ticket.seat_class = flight_1class.lower()
-    ticket.status = 'PENDING'
-    ticket.mobile = ('+'+countrycode+' '+mobile)
-    ticket.email = email
-    ticket.save()
-    return ticket
+    try:
+        ddate = datetime(int(flight_1date.split('-')[2]),int(flight_1date.split('-')[1]),int(flight_1date.split('-')[0]))
+        flight1ddate = datetime(int(flight_1date.split('-')[2]),int(flight_1date.split('-')[1]),int(flight_1date.split('-')[0]),flight1.depart_time.hour,flight1.depart_time.minute)
+        flight1adate = (flight1ddate + flight1.duration)
+        adate = datetime(flight1adate.year,flight1adate.month,flight1adate.day)
+        ffre = 0.0
+        if flight_1class.lower() == 'first':
+            basefare = flight1.first_fare*int(passengerscount)
+        elif flight_1class.lower() == 'business':
+            basefare = flight1.business_fare*int(passengerscount)
+        else:
+            basefare = flight1.economy_fare*int(passengerscount)
+        finalfare = basefare+FEE
+
+        c_check = False
+        if coupon:
+            coupon = str(coupon).upper()
+            if coupon in COUPONS:
+                c_check = True
+
+        if c_check:
+            print(finalfare)
+            discount = (float(COUPONS[coupon])/100) * basefare
+            print(discount)
+            finalfare = finalfare - discount
+            print(finalfare)
+            ticket = Ticket.objects.create(user=user, ref_no=secrets.token_hex(3).upper(), flight=flight1, flight_ddate=ddate, flight_adate=adate, flight_fare=basefare, other_charges=FEE, total_fare=finalfare, coupon_used=coupon, coupon_discount=discount, seat_class=flight_1class.lower(), status='PENDING', mobile=('+'+countrycode+' '+mobile), email=email)
+        else:
+            ticket = Ticket.objects.create(user=user, ref_no=secrets.token_hex(3).upper(), flight=flight1, flight_ddate=ddate, flight_adate=adate, flight_fare=basefare, other_charges=FEE, total_fare=finalfare, seat_class=flight_1class.lower(), status='PENDING', mobile=('+'+countrycode+' '+mobile), email=email)
+        
+        for passenger in passengers:
+            ticket.passengers.add(passenger)
+
+        return ticket
+    except Exception as e:
+        raise e
 
 def createWeekDays():
     days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']

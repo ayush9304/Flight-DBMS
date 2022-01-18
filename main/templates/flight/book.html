@@ -441,6 +441,7 @@
                             <div class="surcharges-value">₹ <span>{{fee}}</span></div>
                             <input type="hidden" id="fee" value="{{fee}}">
                         </div>
+                        <div class='row discounts'></div>
                         <hr>
                         <div class="total-fare">
                             <div class="total-fare-label">Total Fare: </div>
@@ -473,16 +474,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="coupon-code">
+                    <div class="coupon-code", id="coupon_code_div">
                         <h5>Have a coupon code?</h5>
                         <hr>
-                        <div class="row base-fare">
+                        <div class="row base-fare" id='cc_box'>
                             <div class="col-9" style="padding: 10px 10px 10px 0px">
                                 <input type="text" name="coupon" class="form-control" placeholder="Coupon Code" style="text-transform: uppercase;">
                             </div>
                             <div class="col coupon-apply" style="padding: 10px 10px 10px 0px">
                                 <center>
-                                    <button type="button" class="btn btn-primary btn-danger">Apply</button>
+                                    <button type="button" class="btn btn-primary btn-danger" id="coupon_btn" onclick="coupon_call()">Apply</button>
                                 </center>
                             </div>
                         </div>

@@ -39,6 +39,10 @@ class Flight(models.Model):
     economy_fare = models.FloatField(null=True)
     business_fare = models.FloatField(null=True)
     first_fare = models.FloatField(null=True)
+    capacity = models.IntegerField(default=0)
+    available_economy = models.IntegerField(default=0)
+    available_business = models.IntegerField(default=0)
+    available_first = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.id}: {self.origin} to {self.destination}"
@@ -93,4 +97,4 @@ class Ticket(models.Model):
     status = models.CharField(max_length=45, choices=TICKET_STATUS)
 
     def __str__(self):
-        return self.ref_no
+        return f"{self.ref_no} ({self.user.username}) : {self.flight.origin.code} -> {self.flight.destination.code}"

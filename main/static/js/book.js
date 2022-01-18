@@ -9,6 +9,8 @@ function flight_duration() {
     });
 }
 
+let coupon_source = null;
+
 
 function add_traveller() {
     let div = document.querySelector('.add-traveller-div');
@@ -75,6 +77,10 @@ function add_traveller() {
         document.querySelector(".base-fare-value span").innerText = parseInt(fare)*parseInt(pcount);
         document.querySelector(".total-fare-value span").innerText = (parseInt(fare)*parseInt(pcount))+parseInt(fee);
     }
+    coupon_source = 'Passenger_btn';
+    setTimeout(() => {
+        check_coupon();
+    }, 100);
 
 }
 
@@ -89,13 +95,18 @@ function del_traveller(btn) {
     }
     traveller.remove();
     
-    let pcount = document.querySelector("#p-count").value;
+    // let pcount = document.querySelector("#p-count").value;
     let fare = document.querySelector("#basefare").value;
     let fee = document.querySelector("#fee").value;
-    if (parseInt(pcount) !== 0) {
-        document.querySelector(".base-fare-value span").innerText = parseInt(fare)*parseInt(pcount);
-        document.querySelector(".total-fare-value span").innerText = (parseInt(fare)*parseInt(pcount))+parseInt(fee);   
+    if (parseInt(cnt.value) >= 0) {
+        document.querySelector(".base-fare-value span").innerText = parseInt(fare)*parseInt(cnt.value);
+        document.querySelector(".total-fare-value span").innerText = (parseInt(fare)*parseInt(cnt.value))+parseInt(fee);
+
     }
+    coupon_source = 'passenger_btn';
+    setTimeout(() => {
+        check_coupon();
+    }, 100);
 }
 
 function book_submit() {
@@ -105,4 +116,67 @@ function book_submit() {
     }
     alert("Please add atleast one passenger.")
     return false;
+}
+
+function coupon_call(){
+    coupon_source = 'coupon_btn';
+    check_coupon();
+}
+
+function check_coupon(){
+    ccode = document.querySelector("#coupon_code_div input[type='text']").value;
+    if(ccode.trim().length === 0) {
+        if (coupon_source === 'coupon_btn') {
+            alert("Please enter coupon code.");
+            return false;
+        }
+        else{
+            return false;
+        }
+    }
+    else{
+        fetch(`flight/coupon/check/${ccode}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data['success'] === true) {
+                let divv = document.querySelector(".discounts");
+                let basefare = document.querySelector("#basefare").value;
+                let pcount = document.querySelector("#p-count").value;
+                basefare = basefare*pcount;
+                let fee = document.querySelector("#fee").value;
+                discount_percent = parseFloat(data['discount'])/100;
+                let discount_amt = parseFloat(basefare)*discount_percent;
+                let final_amt = parseFloat(basefare)-discount_amt+parseFloat(fee);
+                let content = `
+                <div class="discount-label">Discount: </div>
+                <div class="discount-value" style="color:green;">(-) ₹ <span>${discount_amt}</span></div>
+                `;
+                divv.innerHTML = content;
+                document.querySelector(".total-fare-value span").innerText = final_amt;
+                let ccbox = document.querySelector("#cc_box");
+                let ddiv = document.createElement("div");
+                ddiv.classList.add("col");
+                ddiv.classList.add("coupon-apply");
+                ddiv.setAttribute("id", "coupon-message-box");
+                ddiv.setAttribute("style", "padding: 10px 10px 10px 0px; color:green; font-size:0.8em;");
+                ddiv.innerHTML = `
+                <center>
+                    "Congratulations! You applied ${data['discount']}% discount on your booking."
+                </center>`;
+                document.querySelectorAll("#coupon-message-box").forEach(div => {
+                    div.remove();
+                });
+                ccbox.appendChild(ddiv);
+            }
+            else {
+                if (coupon_source === 'coupon_btn') {
+                    alert("Invalid coupon code.");
+                    return false;
+                }
+                else{
+                    return false;
+                }
+            }
+        });
+    }
 }

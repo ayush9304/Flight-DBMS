@@ -23,8 +23,8 @@ try:
     if len(Flight.objects.all()) == 0:
         addPlaces()
         try:
-            a1 = Flight.objects.create(origin=Place.objects.get(code='DEL'), destination=Place.objects.get(code='LHR'), depart_time="04:05:00" , duration="09:35:00", arrival_time="08:10:00", plane="Boeing 787", airline="Virgin Atlantic", economy_fare=48718.0, business_fare=132626.0, first_fare=207945.0)
-            a2 = Flight.objects.create(origin=Place.objects.get(code='LHR'), destination=Place.objects.get(code='DEL'), depart_time="10:55:00" , duration="08:30:00", arrival_time="23:55:00", plane="Boeing 787", airline="Virgin Atlantic", economy_fare=51784.0, business_fare=84544.0, first_fare=164061.0)
+            a1 = Flight.objects.create(origin=Place.objects.get(code='DEL'), destination=Place.objects.get(code='LHR'), depart_time="04:05:00" , duration="09:35:00", arrival_time="08:10:00", plane="Boeing 787", airline="Virgin Atlantic", economy_fare=48718.0, business_fare=132626.0, first_fare=207945.0, capacity=186, available_economy=138, available_business=19, available_first=29)
+            a2 = Flight.objects.create(origin=Place.objects.get(code='LHR'), destination=Place.objects.get(code='DEL'), depart_time="10:55:00" , duration="08:30:00", arrival_time="23:55:00", plane="Boeing 787", airline="Virgin Atlantic", economy_fare=51784.0, business_fare=84544.0, first_fare=164061.0, capacity=186, available_economy=138, available_business=19, available_first=29)
             for day in Week.objects.all():
                 a1.depart_day.add(day)
                 a2.depart_day.add(day)
@@ -313,33 +313,33 @@ def book(request):
                 if f2:
                     ticket2 = createticket(request.user,passengers,passengerscount,flight2,flight_2date,flight_2class,coupon,countrycode,email,mobile)
 
-                if(flight_1class == 'Economy'):
-                    if f2:
-                        fare = (flight1.economy_fare*int(passengerscount))+(flight2.economy_fare*int(passengerscount))
-                    else:
-                        fare = flight1.economy_fare*int(passengerscount)
-                elif (flight_1class == 'Business'):
-                    if f2:
-                        fare = (flight1.business_fare*int(passengerscount))+(flight2.business_fare*int(passengerscount))
-                    else:
-                        fare = flight1.business_fare*int(passengerscount)
-                elif (flight_1class == 'First'):
-                    if f2:
-                        fare = (flight1.first_fare*int(passengerscount))+(flight2.first_fare*int(passengerscount))
-                    else:
-                        fare = flight1.first_fare*int(passengerscount)
+                # if(flight_1class == 'Economy'):
+                #     if f2:
+                #         fare = (flight1.economy_fare*int(passengerscount))+(flight2.economy_fare*int(passengerscount))
+                #     else:
+                #         fare = flight1.economy_fare*int(passengerscount)
+                # elif (flight_1class == 'Business'):
+                #     if f2:
+                #         fare = (flight1.business_fare*int(passengerscount))+(flight2.business_fare*int(passengerscount))
+                #     else:
+                #         fare = flight1.business_fare*int(passengerscount)
+                # elif (flight_1class == 'First'):
+                #     if f2:
+                #         fare = (flight1.first_fare*int(passengerscount))+(flight2.first_fare*int(passengerscount))
+                #     else:
+                #         fare = flight1.first_fare*int(passengerscount)
             except Exception as e:
                 return HttpResponse(e)
             
 
             if f2:
                 return render(request, "flight/payment.html", {
-                    'fare': fare+FEE,
+                    'fare': ticket1.total_fare + ticket2.total_fare,
                     'ticket': ticket1.id,
                     'ticket2': ticket2.id
                 })
             return render(request, "flight/payment.html", {
-                'fare': fare+FEE,
+                'fare': ticket1.total_fare,
                 'ticket': ticket1.id
             })
         else:
@@ -460,3 +460,26 @@ def resume_booking(request):
             return HttpResponseRedirect(reverse("login"))
     else:
         return HttpResponse("Method must be post.")
+
+def coupon_check(request, ccode):
+    if request.user.is_authenticated:
+        coupon = ccode
+        try:
+            coupon = str(coupon).upper()
+            if coupon in COUPONS:
+                return JsonResponse({
+                    'success': True,
+                    'discount': float(COUPONS[coupon])
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'error': "Coupon not found"
+                })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': e
+            })
+    else:
+        return HttpResponse("User unauthorised")

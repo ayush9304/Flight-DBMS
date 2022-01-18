@@ -1,5 +1,5 @@
 FEE = 100.0
 
 COUPONS = {
-    'WELCOME30': 30.0,
+    'WELCOME20': 20.0,
 }

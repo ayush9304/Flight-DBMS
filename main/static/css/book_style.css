@@ -183,12 +183,12 @@ h5{
     justify-content: center;
 }
 
-.base-fare, .surcharges, .other-service, .total-fare{
+.base-fare, .surcharges, .other-service, .discounts, .total-fare {
     margin: 13px 10px;
     justify-content: space-between;
     font-weight: bold;
 }
-.base-fare-value, .surcharges-value, .other-service-value{
+.base-fare-value, .surcharges-value, .discount-value, .other-service-value{
     font-size: 1.1em;
 }
 .total-fare{
