@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import calendar
 import math
 import secrets
@@ -312,22 +312,6 @@ def book(request):
                 ticket1 = createticket(request.user,passengers,passengerscount,flight1,flight_1date,flight_1class,coupon,countrycode,email,mobile)
                 if f2:
                     ticket2 = createticket(request.user,passengers,passengerscount,flight2,flight_2date,flight_2class,coupon,countrycode,email,mobile)
-
-                # if(flight_1class == 'Economy'):
-                #     if f2:
-                #         fare = (flight1.economy_fare*int(passengerscount))+(flight2.economy_fare*int(passengerscount))
-                #     else:
-                #         fare = flight1.economy_fare*int(passengerscount)
-                # elif (flight_1class == 'Business'):
-                #     if f2:
-                #         fare = (flight1.business_fare*int(passengerscount))+(flight2.business_fare*int(passengerscount))
-                #     else:
-                #         fare = flight1.business_fare*int(passengerscount)
-                # elif (flight_1class == 'First'):
-                #     if f2:
-                #         fare = (flight1.first_fare*int(passengerscount))+(flight2.first_fare*int(passengerscount))
-                #     else:
-                #         fare = flight1.first_fare*int(passengerscount)
             except Exception as e:
                 return HttpResponse(e)
             
@@ -365,7 +349,6 @@ def payment(request):
             try:
                 ticket = Ticket.objects.get(id=ticket_id)
                 ticket.status = 'CONFIRMED'
-                ticket.booking_date = datetime.now()
                 ticket.save()
                 if t2:
                     ticket2 = Ticket.objects.get(id=ticket2_id)
@@ -483,3 +466,60 @@ def coupon_check(request, ccode):
             })
     else:
         return HttpResponse("User unauthorised")
+
+def report(request):
+    if request.user.is_authenticated:
+        data = []
+
+        for i in range(7):
+            dt = date.today() - timedelta(days=i)
+            t_confirmed = Ticket.objects.filter(booking_date=dt, status='CONFIRMED').count()
+            t_cancelled = Ticket.objects.filter(booking_date=dt, status='CANCELLED').count()
+            t_pending = Ticket.objects.filter(booking_date=dt, status='PENDING').count()
+            data.append([t_cancelled, t_pending, t_confirmed])
+            # print(type(Ticket.objects.all().first().booking_date))
+        print(data)
+        dates = [(date.today() - timedelta(days=i)).strftime("%a, %d %b %Y") for i in range(7)]
+        print(dates)
+
+        return render(request, 'flight/report.html', {
+            'page': 'report',
+            'data': data,
+            'dates': dates
+        })
+    else:
+        return HttpResponseRedirect(reverse('login'))
+
+# create fake tickets
+# def data_i(request):
+#     import random
+#     cf = 18
+#     cn = 3
+#     pn = 7
+#     passengers = [Passenger.objects.create(first_name='Tom',last_name='Cruise',gender='male')]
+#     flight1 = Flight.objects.get(id=1)
+#     flight_1class = 'first'
+#     coupon=''
+#     countrycode = '91'
+#     email='ayush@mail.com'
+#     mobile='9225665527'
+
+#     for i in range(cf):
+#         qx = random.randint(4,28)
+#         flight_1date = f"{qx}-02-2022"
+#         ticket = createticket(request.user,passengers,1,flight1,flight_1date,flight_1class,coupon,countrycode,email,mobile)
+#         ticket.status = 'CONFIRMED'
+#         ticket.save()
+
+#     for i in range(pn):
+#         qx = random.randint(4,23)
+#         flight_1date = f"{qx}-02-2022"
+#         ticket = createticket(request.user,passengers,1,flight1,flight_1date,flight_1class,coupon,countrycode,email,mobile)
+    
+    
+#     for i in range(cn):
+#         qx = random.randint(4,23)
+#         flight_1date = f"{qx}-02-2022"
+#         ticket = createticket(request.user,passengers,1,flight1,flight_1date,flight_1class,coupon,countrycode,email,mobile)
+#         ticket.status = 'CANCELLED'
+#         ticket.save()

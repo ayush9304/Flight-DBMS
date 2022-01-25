@@ -17,4 +17,6 @@ urlpatterns = [
     path('flight/ticket/cancel', views.cancel_ticket, name="cancelticket"),
     path('flight/ticket/resume', views.resume_booking, name="resumebooking"),
     path('flight/coupon/check/<str:ccode>', views.coupon_check, name="couponcheck"),
+    path('report', views.report, name="report"),
+    # path('tt', views.data_i),
 ]
