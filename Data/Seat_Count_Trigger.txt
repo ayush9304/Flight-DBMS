@@ -45,5 +45,5 @@ CREATE TRIGGER capacity_check
 -- SELECT * FROM main_ticket;
 
 -- INSERT INTO main_ticket
--- VALUES (211, '7v512D', '29-01-2022', '30-01-2022', 12345.0, 100.0, 'JUICYPUSSY', 0.0, 12445.0, 'economy', '18-01-2022',
+-- VALUES (211, '7v512D', '29-01-2022', '30-01-2022', 12345.0, 100.0, 'DDS', 0.0, 12445.0, 'economy', '18-01-2022',
 --         '9999999999', 'pussy@mail.com', 'Confirmed', 2, 1);
